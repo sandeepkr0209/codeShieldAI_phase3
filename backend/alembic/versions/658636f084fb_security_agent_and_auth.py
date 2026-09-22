@@ -58,7 +58,17 @@ def upgrade() -> None:
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("email", sa.String(320), nullable=False),
         sa.Column("password_hash", sa.String(255), nullable=True),
-        sa.Column("auth_provider", auth_provider, nullable=False, server_default="password"),
+        sa.Column(
+            "auth_provider",
+            postgresql.ENUM(
+                "password",
+                "google",
+                name="auth_provider",
+                create_type=False,
+            ),
+            nullable=False,
+            server_default="password",
+        ),
         sa.Column("google_id", sa.String(255), nullable=True),
         sa.Column("profile_image", sa.String(1024), nullable=True),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default="true"),
