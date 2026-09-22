@@ -26,6 +26,7 @@ def run_semgrep(source_root: Path) -> list[dict[str, Any]]:
     command = [
         "semgrep",
         "--config=auto",
+        "--no-git-ignore",
         "--json",
         "--quiet",
         "--timeout", "30",

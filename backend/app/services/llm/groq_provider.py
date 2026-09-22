@@ -45,14 +45,31 @@ class GroqProvider(LLMProvider):
     ) -> dict[str, Any]:
         structured_system = (
             (system_prompt or "")
-            + "\n\nYou must respond with ONLY valid JSON matching this shape, "
-            "no prose, no markdown fences:\n"
+            + "\n\nReturn ONLY a valid JSON object matching this shape. "
+            + "Do not include markdown, explanations, or code fences.\n"
             + schema_hint
         )
-        raw = self.generate(prompt, system_prompt=structured_system)
-        cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+
+        messages = [
+            {"role": "system", "content": structured_system},
+            {"role": "user", "content": prompt},
+        ]
+
+        completion = self._client.chat.completions.create(
+            model=self._model,
+            messages=messages,
+            temperature=0.1,
+            max_tokens=1024,
+            response_format={"type": "json_object"},
+        )
+
+        raw = completion.choices[0].message.content or ""
+
         try:
-            return json.loads(cleaned)
+            return json.loads(raw)
         except json.JSONDecodeError:
             logger.error("Groq structured response was not valid JSON: %s", raw)
-            return {"error": "invalid_json", "raw_response": raw}
+            return {
+                "error": "invalid_json",
+                "raw_response": raw,
+            }

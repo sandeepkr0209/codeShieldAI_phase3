@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CodeShieldAI Security Report — demo</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; background: #0a0e14; color: #cbd5e1; margin: 0; padding: 40px; line-height: 1.5; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { color: #f1f5f9; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #f1f5f9; font-size: 16px; margin-top: 36px; border-bottom: 1px solid #1e2635; padding-bottom: 8px; }
+  .subtitle { color: #64748b; font-size: 13px; margin-bottom: 24px; }
+  .muted { color: #64748b; font-size: 13px; }
+  .meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+  .meta-item { background: #0f1420; border: 1px solid #1e2635; border-radius: 8px; padding: 12px; }
+  .meta-item .label { font-size: 11px; color: #64748b; text-transform: uppercase; }
+  .meta-item .value { font-size: 14px; color: #e2e8f0; margin-top: 4px; }
+  .severity-grid { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+  .sev-badge { padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; color: white; }
+  .finding { background: #0f1420; border: 1px solid #1e2635; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .finding-title { font-size: 15px; font-weight: 600; color: #f1f5f9; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; color: white; margin-right: 6px; }
+  .field { margin-top: 10px; font-size: 13px; }
+  .field .k { color: #64748b; text-transform: uppercase; font-size: 10px; }
+  code, pre { background: #131a29; border: 1px solid #1e2635; border-radius: 6px; padding: 8px; display: block; font-size: 12px; overflow-x: auto; white-space: pre-wrap; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #1e2635; font-size: 12px; color: #64748b; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>CodeShieldAI Security Report</h1>
+  <p class="subtitle">AI-Assisted Application Security Analysis — generated 2026-09-22 12:20 UTC</p>
+
+  <h2>1. Executive Summary</h2>
+  <p>This report covers one security scan of project <strong>demo</strong>.
+  23 total finding(s) were produced, of which 17 passed
+  deterministic verification (see "Verification" in each finding below) and were marked confirmed;
+  the remainder are potential findings that warrant manual review.</p>
+
+  <h2>2. Project Information</h2>
+  <div class="meta-grid">
+    <div class="meta-item"><div class="label">Name</div><div class="value">demo</div></div>
+    <div class="meta-item"><div class="label">Target type</div><div class="value">github</div></div>
+    <div class="meta-item"><div class="label">Target</div><div class="value">https://github.com/juice-shop/juice-shop</div></div>
+  </div>
+
+  <h2>3. Scan Configuration</h2>
+  <div class="meta-grid">
+    <div class="meta-item"><div class="label">Scan type</div><div class="value">source_code</div></div>
+    <div class="meta-item"><div class="label">Status</div><div class="value">completed</div></div>
+    <div class="meta-item"><div class="label">Started</div><div class="value">2026-09-22 17:44:12.267166+05:30</div></div>
+  </div>
+
+  <h2>4. Application Overview</h2>
+  <p class="muted">Pages discovered: 0 &middot; Endpoints discovered: 0 &middot; Requests made: 0</p>
+
+  <h2>5. Attack Surface</h2>
+  <p class="muted">See the Application Map in the CodeShieldAI dashboard for the full list of discovered pages and endpoints for this scan.</p>
+
+  <h2>6. Security Statistics</h2>
+  <div class="severity-grid">
+    <div class="sev-badge" style="background:#f97316">HIGH: 16</div><div class="sev-badge" style="background:#eab308">MEDIUM: 7</div>
+  </div>
+
+  <h2>7. Findings Summary</h2>
+  <p class="muted">23 finding(s) total, sorted by severity.</p>
+
+  <h2>8. Detailed Findings</h2>
+  
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Insecure &quot;curl | bash&quot; pattern in GitHub Actions workflow</span></div>
+    <div class="field"><div class="k">Category</div>Security Misconfiguration</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\ci.yml:359-359</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-494 / A05:2021 - Security Misconfiguration</div>
+    <div class="field"><div class="k">Description</div>The CI workflow contains a step that pipes the output of `curl` (or `wget`) directly into a shell interpreter (`| bash`). This allows arbitrary code from the remote URL to be executed on the CI runner without verification.</div>
+    <div class="field"><div class="k">Impact</div>If the remote server is compromised or the URL is hijacked, an attacker can execute malicious commands in the CI environment, potentially stealing secrets, modifying code, or compromising downstream deployments.</div>
+    <div class="field"><div class="k">Remediation</div>Download the script to a file first, verify its integrity using a checksum or digital signature, and only then execute it. Prefer using trusted package managers or pinned versions. Avoid piping untrusted network data directly to a shell.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.85; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>85%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Potential Shell Injection in GitHub Actions workflow</span></div>
+    <div class="field"><div class="k">Category</div>Command Injection</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\update-challenges-ebook.yml:22-25</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-78 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>The workflow uses `${{ github ... }}` variable interpolation directly inside a `run:` step, allowing untrusted context data to be executed as part of a shell command.</div>
+    <div class="field"><div class="k">Impact</div>An attacker who can influence the `github` context could inject arbitrary shell commands, leading to secret leakage, code modification, or full runner compromise.</div>
+    <div class="field"><div class="k">Remediation</div>Avoid direct interpolation of untrusted context data in `run:` commands. Pass needed values via `env:` variables and reference them safely (e.g., &quot;$ENVVAR&quot;). Validate or sanitize any data that originates from external sources before using it in shell commands.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.70; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>79%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Potential Command Injection via GitHub Actions `${{ github }}` interpolation</span></div>
+    <div class="field"><div class="k">Category</div>Command Injection</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\update-challenges-www-legacy.yml:36-44</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-78 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>The workflow `update-challenges-www-legacy.yml` interpolates `${{ ... }}` GitHub context data directly into a `run:` step. If the context contains attacker‑controlled values, they could be executed as shell commands on the runner.</div>
+    <div class="field"><div class="k">Impact</div>An attacker could execute arbitrary commands in the CI environment, potentially stealing secrets, modifying code, or compromising downstream systems.</div>
+    <div class="field"><div class="k">Remediation</div>Do not embed untrusted `${{ github }}` values directly in `run:` scripts. Pass needed data via `env:` variables and reference them with quoted expansion (e.g., &quot;$MY_VAR&quot;). Validate or sanitize any user‑controlled inputs before use, and limit permissions of the runner.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.70; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>79%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Potential Shell Injection via GitHub Actions run step</span></div>
+    <div class="field"><div class="k">Category</div>Command Injection</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\update-challenges-www.yml:27-34</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-78 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>The workflow uses `${{ ... }}` interpolation of `github` context data directly inside a `run:` command, which can allow untrusted input to be injected into the shell.</div>
+    <div class="field"><div class="k">Impact</div>An attacker could execute arbitrary commands on the runner, potentially stealing secrets, modifying code, or compromising the CI environment.</div>
+    <div class="field"><div class="k">Remediation</div>Avoid interpolating untrusted context data directly in `run:` steps. Store needed values in environment variables via `env:` and reference them with proper quoting (e.g., &quot;$ENVVAR&quot;). Validate or sanitize any user‑controlled inputs before use.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.70; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>79%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Potential Run Shell Injection via GitHub Actions `${{...}}` interpolation</span></div>
+    <div class="field"><div class="k">Category</div>Command Injection</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\update-challenges-www.yml:36-44</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-78 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>The workflow `update-challenges-www.yml` uses `${{ github }}` context data directly inside a `run:` step. Because GitHub context can contain untrusted user input (e.g., from pull‑request events), this interpolation may allow an attacker to inject arbitrary shell commands into the runner.</div>
+    <div class="field"><div class="k">Impact</div>An attacker could execute malicious commands on the CI runner, potentially stealing secrets, modifying code, or compromising downstream environments.</div>
+    <div class="field"><div class="k">Remediation</div>Do not interpolate untrusted GitHub context directly in `run:` commands. Pass needed values via `env:` variables, reference them as `$ENVVAR` inside the script, and ensure proper quoting. Validate or sanitize any user‑controlled inputs before use.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.70; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>79%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Potential SQL Injection via Sequelize raw query</span></div>
+    <div class="field"><div class="k">Category</div>SQL Injection</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\data\static\codefixes\dbSchemaChallenge_1.ts:5-5</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-89 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>Semgrep detected a Sequelize statement in `dbSchemaChallenge_1.ts` that incorporates a variable derived from user input without proper sanitization, which can lead to SQL injection.</div>
+    <div class="field"><div class="k">Impact</div>An attacker could manipulate the query to read, modify, or delete unauthorized data, or bypass authentication checks.</div>
+    <div class="field"><div class="k">Remediation</div>Replace the raw query with Sequelize&#x27;s parameterized query methods or query bindings. Ensure any user-supplied values are passed as parameters rather than concatenated into the SQL string. Validate and sanitize inputs where appropriate.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.72; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>80%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Mutable GitHub Action tag used in workflow</span></div>
+    <div class="field"><div class="k">Category</div>Security Misconfiguration</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\image_actions.yml:33-33</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>Not mapped / A09:2021 - Security Misconfiguration</div>
+    <div class="field"><div class="k">Description</div>The GitHub Actions workflow references an action using a mutable tag or branch name, which can be silently retagged by the action owner, enabling supply‑chain attacks.</div>
+    <div class="field"><div class="k">Impact</div>An attacker who controls the referenced action could inject malicious code into the CI pipeline, potentially compromising the repository and downstream deployments.</div>
+    <div class="field"><div class="k">Remediation</div>Pin the action reference to a specific 40‑character commit SHA (e.g., `uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608`) or use a version tag that is immutable.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.78; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>82%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Potential SQL Injection via Sequelize query</span></div>
+    <div class="field"><div class="k">Category</div>SQL Injection</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\data\static\codefixes\dbSchemaChallenge_3.ts:11-11</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-89 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>A Sequelize statement in `dbSchemaChallenge_3.ts` is built using a value that originates from user input without proper sanitization or parameterization, which can allow an attacker to inject arbitrary SQL.</div>
+    <div class="field"><div class="k">Impact</div>An attacker could manipulate the query to read, modify, or delete data they are not authorized to access, potentially compromising the entire database.</div>
+    <div class="field"><div class="k">Remediation</div>Refactor the query to use Sequelize&#x27;s parameter binding or prepared statements (e.g., `sequelize.query(sql, { replacements: [userInput] })`). Avoid string concatenation or template literals with untrusted data. Validate and whitelist allowed input values where possible.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.80; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>83%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">potential</span>
+         <span class="finding-title">Hardcoded JWT token committed in source code</span></div>
+    <div class="field"><div class="k">Category</div>Security Misconfiguration</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\frontend\src\app\last-login-ip\last-login-ip.component.spec.ts:78-78</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-16 / A05:2021 - Security Misconfiguration</div>
+    <div class="field"><div class="k">Description</div>A JWT token literal was detected in the file `last-login-ip.component.spec.ts` (line 78). Embedding authentication tokens in source code is a misconfiguration that can expose credentials.</div>
+    <div class="field"><div class="k">Impact</div>An attacker who can access the repository could reuse the token to impersonate a user or gain unauthorized access to protected APIs.</div>
+    <div class="field"><div class="k">Remediation</div>Remove the hardcoded JWT token from the codebase. Store secrets in environment variables or a secret manager, and ensure tokens are rotated. Add a pre‑commit secret‑scan hook to prevent future leaks.</div>
+    <div class="field"><div class="k">Verification</div>Not verified (static_evidence) — Not verified — analyzer confidence 0.35 &lt; 0.6.</div>
+    <div class="field"><div class="k">Confidence</div>57%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Mutable GitHub Actions tag used in workflow</span></div>
+    <div class="field"><div class="k">Category</div>Supply Chain / Dependency Management</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\codeql-analysis.yml:23-23</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>Not mapped / A09:2021 - Security Logging and Monitoring (relevant to supply‑chain risk) | null</div>
+    <div class="field"><div class="k">Description</div>The workflow `codeql-analysis.yml` references an action using a mutable tag or branch name instead of a fixed commit SHA. Mutable references can be silently retagged by the action owner, allowing a supply‑chain compromise.</div>
+    <div class="field"><div class="k">Impact</div>An attacker who compromises the upstream action repository could inject malicious code into the CI pipeline, leading to credential theft, backdoors, or further propagation to downstream projects.</div>
+    <div class="field"><div class="k">Remediation</div>Pin the action reference to a specific 40‑character commit SHA (e.g., `uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608`) or use a version tag that is immutable and regularly reviewed. Consider enabling Dependabot alerts for action updates.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.80; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>83%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Potential SQL Injection via Sequelize Query</span></div>
+    <div class="field"><div class="k">Category</div>SQL Injection</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\data\static\codefixes\unionSqlInjectionChallenge_1.ts:6-6</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-89 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>A Sequelize statement in `unionSqlInjectionChallenge_1.ts` (line 6) incorporates a variable that may originate from user input without proper sanitization, creating a risk of SQL injection.</div>
+    <div class="field"><div class="k">Impact</div>An attacker could manipulate the query to read, modify, or delete unauthorized data, or execute arbitrary SQL commands on the database.</div>
+    <div class="field"><div class="k">Remediation</div>Refactor the query to use Sequelize parameter binding or the built‑in query interface (e.g., `sequelize.query(sql, { replacements: { userInput } })`). Avoid string concatenation or template literals with untrusted data. Validate and whitelist input where appropriate.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.80; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>83%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">potential</span>
+         <span class="finding-title">Hardcoded JWT token committed in source code</span></div>
+    <div class="field"><div class="k">Category</div>Security Misconfiguration</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\frontend\src\app\last-login-ip\last-login-ip.component.spec.ts:72-72</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-16 / A05:2021 - Security Misconfiguration</div>
+    <div class="field"><div class="k">Description</div>A JWT token literal was detected in a test file (last-login-ip.component.spec.ts). Storing authentication tokens in source code can lead to credential leakage.</div>
+    <div class="field"><div class="k">Impact</div>An attacker who obtains the repository could reuse the token to impersonate a user or gain unauthorized access to protected resources.</div>
+    <div class="field"><div class="k">Remediation</div>Remove the hardcoded JWT from the codebase. Store secrets in environment variables or a secret manager, and ensure tokens are rotated. Add a pre‑commit hook or scanning rule to prevent future secret commits.</div>
+    <div class="field"><div class="k">Verification</div>Not verified (static_evidence) — Not verified — analyzer confidence 0.35 &lt; 0.6.</div>
+    <div class="field"><div class="k">Confidence</div>49%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Potential SQL Injection via Sequelize Query</span></div>
+    <div class="field"><div class="k">Category</div>SQL Injection</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\data\static\codefixes\unionSqlInjectionChallenge_3.ts:10-10</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-89 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>A Sequelize statement in `unionSqlInjectionChallenge_3.ts` (line 10) incorporates a variable that originates from user input without proper sanitization or parameterization, creating a risk of SQL injection.</div>
+    <div class="field"><div class="k">Impact</div>An attacker could inject malicious SQL to read, modify, or delete data, or bypass authentication checks.</div>
+    <div class="field"><div class="k">Remediation</div>Refactor the query to use Sequelize parameter binding or prepared statements (e.g., `sequelize.query(sql, { replacements: { userInput } })`). Avoid raw string concatenation; validate and whitelist input where appropriate.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.80; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>83%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Potential Eval Injection via User-Controlled Request Data</span></div>
+    <div class="field"><div class="k">Category</div>Code Injection / Remote Code Execution</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\routes\userProfile.ts:65-65</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-95 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>User-supplied data from an Express request is passed directly to `eval` in `userProfile.ts`. If the data is controllable by an attacker, arbitrary JavaScript code can be executed in the server process.</div>
+    <div class="field"><div class="k">Impact</div>An attacker could execute malicious code on the server, leading to data theft, privilege escalation, or full system compromise.</div>
+    <div class="field"><div class="k">Remediation</div>Remove the use of `eval`. Refactor the code to use safe alternatives such as JSON parsing, explicit function calls, or a whitelist of allowed expressions. If dynamic evaluation is absolutely required, strictly validate and sanitize the input against an allowlist before evaluation, and consider using a sandboxed environment.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.78; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>82%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">potential</span>
+         <span class="finding-title">Hardcoded Secret Found in users.yml</span></div>
+    <div class="field"><div class="k">Category</div>Security Misconfiguration</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\data\static\users.yml:151-151</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-16 / A05:2021 - Security Misconfiguration</div>
+    <div class="field"><div class="k">Description</div>Static analysis detected a generic secret (e.g., password, API key) in the file `juice-shop-master\data\static\users.yml` at line 151. Storing secrets in source code or configuration files is insecure and can be inadvertently exposed.</div>
+    <div class="field"><div class="k">Impact</div>An attacker who gains access to the repository or the deployed application could retrieve the secret and use it to impersonate users, access privileged functions, or compromise downstream services.</div>
+    <div class="field"><div class="k">Remediation</div>Remove the secret from the source file and store it securely using environment variables, a secrets manager, or a dedicated credential vault. Rotate any exposed credentials and ensure the repository does not contain hard‑coded secrets in the future. Add a pre‑commit hook or CI scan to prevent secret leakage.</div>
+    <div class="field"><div class="k">Verification</div>Not verified (static_evidence) — Not verified — analyzer confidence 0.35 &lt; 0.6.</div>
+    <div class="field"><div class="k">Confidence</div>52%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#f97316">HIGH</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Potential SQL Injection via Sequelize query in search route</span></div>
+    <div class="field"><div class="k">Category</div>SQL Injection</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\routes\search.ts:23-23</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-89 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>A Sequelize statement in `routes/search.ts` line 23 uses a value that originates from user input without apparent sanitization or parameterization, which can allow an attacker to manipulate the generated SQL.</div>
+    <div class="field"><div class="k">Impact</div>An attacker could modify the query logic to retrieve, modify, or delete unauthorized data, potentially compromising the application&#x27;s confidentiality and integrity.</div>
+    <div class="field"><div class="k">Remediation</div>Refactor the query to use Sequelize&#x27;s parameterized query methods (e.g., `where` clauses, replacements, or bind parameters). Avoid raw query strings with interpolated user data, and validate/whitelist allowed input values.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.70; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>79%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#eab308">MEDIUM</span>
+         <span class="badge" style="background:#1e2635">potential</span>
+         <span class="finding-title">semgrep finding: yaml.github-actions.security.run-shell-injection.run-shell-injection</span></div>
+    <div class="field"><div class="k">Category</div>Uncategorized</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\update-challenges-www-legacy.yml:27-34</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>Not mapped / Not mapped</div>
+    <div class="field"><div class="k">Description</div>Using variable interpolation `${{...}}` with `github` context data in a `run:` step could allow an attacker to inject their own code into the runner. This would allow them to steal secrets and code. `github` context data can have arbitrary user input and should be treated as untrusted. Instead, use an intermediate environment variable with `env:` to store the data and use the environment variable in the `run:` script. Be sure to use double-quotes the environment variable, like this: &quot;$ENVVAR&quot;.</div>
+    <div class="field"><div class="k">Impact</div>Impact not assessed — LLM explanation unavailable for this observation.</div>
+    <div class="field"><div class="k">Remediation</div>Review this finding manually; automated explanation was unavailable.</div>
+    <div class="field"><div class="k">Verification</div>Not verified (static_evidence) — Not verified — LLM explanation failed (fallback used).</div>
+    <div class="field"><div class="k">Confidence</div>63%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#eab308">MEDIUM</span>
+         <span class="badge" style="background:#1e2635">potential</span>
+         <span class="finding-title">Potential Prototype Pollution via Bracket Notation with User Input</span></div>
+    <div class="field"><div class="k">Category</div>Prototype Pollution / Object Property Injection</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\routes\currentUser.ts:31-31</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-1327 / A03:2021 - Injection</div>
+    <div class="field"><div class="k">Description</div>The code uses bracket object notation with a value derived from user input, which can allow an attacker to access or overwrite arbitrary object properties, including those on the prototype chain.</div>
+    <div class="field"><div class="k">Impact</div>An attacker could read sensitive data, alter application logic, or achieve privilege escalation by modifying prototype properties that affect many parts of the application.</div>
+    <div class="field"><div class="k">Remediation</div>Validate and whitelist any property names supplied by users before using them in bracket notation. Prefer dot notation with known literals, or use safe accessor functions that check `Object.hasOwnProperty`. Consider using libraries that freeze prototypes or otherwise protect against prototype pollution.</div>
+    <div class="field"><div class="k">Verification</div>Not verified (static_evidence) — Not verified — analyzer confidence 0.35 &lt; 0.6.</div>
+    <div class="field"><div class="k">Confidence</div>53%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#eab308">MEDIUM</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Mutable GitHub Actions tag allows supply‑chain compromise</span></div>
+    <div class="field"><div class="k">Category</div>Supply Chain / Security Misconfiguration</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\codeql-analysis.yml:36-36</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-494 / A06:2021 - Vulnerable and Outdated Components</div>
+    <div class="field"><div class="k">Description</div>The workflow `codeql-analysis.yml` references a GitHub Action using a mutable tag or branch name instead of a fixed commit SHA. Tags/branches can be retargeted by the action maintainer, enabling an attacker to inject malicious code into the CI pipeline.</div>
+    <div class="field"><div class="k">Impact</div>An attacker who gains control of the referenced tag/branch could execute arbitrary code in the CI environment, potentially stealing secrets, modifying artifacts, or compromising downstream deployments.</div>
+    <div class="field"><div class="k">Remediation</div>Pin all GitHub Action references to a full 40‑character commit SHA (e.g., `uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608`). Alternatively, use version tags that are immutable (e.g., `@v2.3.4`) and enable action integrity verification via signatures or the `actions/checkout` `persist-credentials: false` pattern.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.70; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>79%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#eab308">MEDIUM</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Mutable GitHub Actions tag allows supply‑chain compromise</span></div>
+    <div class="field"><div class="k">Category</div>Supply Chain / Dependency Integrity</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\image_actions.yml:42-42</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-494 / A06:2021 - Vulnerable and Outdated Components</div>
+    <div class="field"><div class="k">Description</div>The workflow `image_actions.yml` references a GitHub Action using a mutable tag or branch name instead of a fixed commit SHA. Tags and branches can be silently retargeted by the action owner, enabling a supply‑chain attack.</div>
+    <div class="field"><div class="k">Impact</div>An attacker who compromises the referenced action could execute arbitrary code in the CI pipeline, potentially exfiltrating secrets, modifying build artifacts, or injecting malware into downstream deployments.</div>
+    <div class="field"><div class="k">Remediation</div>Pin the action reference to a full 40‑character commit SHA (e.g., `uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608`) or use a version tag that is immutable and signed. Regularly review and update pinned versions.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.70; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>79%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#eab308">MEDIUM</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Mutable GitHub Actions tag allows supply‑chain compromise</span></div>
+    <div class="field"><div class="k">Category</div>Supply Chain / Insecure CI Configuration</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\ci.yml:188-188</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-494 / A05:2021 - Security Misconfiguration</div>
+    <div class="field"><div class="k">Description</div>The workflow `ci.yml` references an action using a mutable tag or branch (e.g., `uses: actions/checkout@v2`). Tags and branches can be silently retagged by the action maintainer, enabling an attacker to inject malicious code into the CI pipeline.</div>
+    <div class="field"><div class="k">Impact</div>An attacker who gains control of the referenced tag/branch could execute arbitrary code in the CI environment, potentially stealing secrets, modifying artifacts, or compromising downstream deployments.</div>
+    <div class="field"><div class="k">Remediation</div>Pin the action to a specific 40‑character commit SHA (e.g., `uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608`) or use a version tag that is immutable. Regularly review and update pinned commits after verifying integrity.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.70; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>79%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#eab308">MEDIUM</span>
+         <span class="badge" style="background:#1e2635">confirmed</span>
+         <span class="finding-title">Mutable GitHub Actions tag allows supply‑chain compromise</span></div>
+    <div class="field"><div class="k">Category</div>Security Misconfiguration</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\.github\workflows\image_actions.yml:30-30</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-494 / A09:2021 - Security Misconfiguration</div>
+    <div class="field"><div class="k">Description</div>The workflow `image_actions.yml` references an action using a mutable tag or branch name instead of a fixed commit SHA. Tags and branches can be retargeted by the action maintainer, enabling an attacker to inject malicious code into the CI pipeline.</div>
+    <div class="field"><div class="k">Impact</div>An attacker who gains control of the referenced action could execute arbitrary code in the CI environment, potentially stealing secrets, modifying build artifacts, or compromising downstream deployments.</div>
+    <div class="field"><div class="k">Remediation</div>Pin all GitHub Action references to a full 40‑character commit SHA (e.g., `uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608`) or use a version tag that is immutable. Regularly audit and update pinned versions.</div>
+    <div class="field"><div class="k">Verification</div>Verified (static_evidence) — Verified: analyzer reported confidence 0.85; 3 relevant security-knowledge chunk(s) retrieved; LLM self-reported confidence 0.70; source location available.</div>
+    <div class="field"><div class="k">Confidence</div>79%</div>
+  </div>
+  <div class="finding">
+    <div><span class="badge" style="background:#eab308">MEDIUM</span>
+         <span class="badge" style="background:#1e2635">potential</span>
+         <span class="finding-title">Hardcoded JWT token embedded in source code</span></div>
+    <div class="field"><div class="k">Category</div>Security Misconfiguration</div>
+    <div class="field"><div class="k">Location</div>juice-shop-master\frontend\src\app\app.guard.spec.ts:46-46</div>
+    <pre>requires login</pre>
+    <div class="field"><div class="k">CWE / OWASP</div>CWE-798 / A05:2021 - Security Misconfiguration</div>
+    <div class="field"><div class="k">Description</div>A literal JWT token was detected in the file `app.guard.spec.ts` (line 46). Embedding authentication tokens in source code is a misconfiguration that can expose credentials.</div>
+    <div class="field"><div class="k">Impact</div>If an attacker gains access to the code repository, they could reuse the token to impersonate a user or gain unauthorized access to protected API endpoints.</div>
+    <div class="field"><div class="k">Remediation</div>Remove the hard‑coded JWT from the codebase. Use environment variables, secret management services, or test fixtures that generate tokens at runtime. Rotate any tokens that may have been exposed.</div>
+    <div class="field"><div class="k">Verification</div>Not verified (static_evidence) — Not verified — analyzer confidence 0.35 &lt; 0.6; LLM self-reported confidence 0.55 &lt; 0.6.</div>
+    <div class="field"><div class="k">Confidence</div>43%</div>
+  </div>
+
+  <h2>9-12. Source Locations, Evidence, CWE/OWASP Mapping</h2>
+  <p class="muted">Included inline within each finding above — see "Location", "CWE/OWASP", and "Evidence" fields.</p>
+
+  <h2>13-14. Impact &amp; Remediation</h2>
+  <p class="muted">Included inline within each finding above.</p>
+
+  <h2>15. Limitations</h2>
+  <p class="muted">CodeShieldAI is an AI-assisted application security analysis platform, not an autonomous
+  penetration-testing system. Static analysis may produce false positives; dynamic checks used here are
+  heuristic indicators (especially the IDOR check, deliberately scored at low confidence) requiring human
+  verification. Only the vulnerability classes described in the project README are covered. No destructive
+  testing was performed.</p>
+
+  <h2>16. Scan Errors / Warnings</h2>
+  <p class="muted">None recorded.</p>
+  
+
+  <div class="footer">Generated by CodeShieldAI — an AI-assisted application security analysis platform. Not a substitute for professional penetration testing.</div>
+</div>
+</body>
+</html>

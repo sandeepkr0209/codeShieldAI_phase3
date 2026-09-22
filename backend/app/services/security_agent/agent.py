@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 # How many prioritized observations get a full LLM+verification pass per
 # scan, to bound scan duration / API usage on large codebases.
-MAX_OBSERVATIONS_PER_SCAN = 25
+MAX_OBSERVATIONS_PER_SCAN = 5
 
 _SEVERITY_RANK = {"ERROR": 3, "HIGH": 3, "WARNING": 2, "MEDIUM": 2, "INFO": 1, "LOW": 1}
 
