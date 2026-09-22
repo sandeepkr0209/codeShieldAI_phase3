@@ -1,0 +1,58 @@
+"""
+Groq implementation of LLMProvider.
+
+Reads GROQ_API_KEY and GROQ_MODEL from environment variables via
+app.core.config. Never exposes the API key to callers or the frontend.
+"""
+import json
+import logging
+from typing import Any
+
+from groq import Groq
+
+from app.core.config import get_settings
+from app.services.llm.provider import LLMProvider
+
+logger = logging.getLogger(__name__)
+
+
+class GroqProvider(LLMProvider):
+    def __init__(self) -> None:
+        settings = get_settings()
+        if not settings.GROQ_API_KEY:
+            logger.warning(
+                "GROQ_API_KEY is not set. GroqProvider calls will fail until it is configured in .env"
+            )
+        self._client = Groq(api_key=settings.GROQ_API_KEY or "missing-key")
+        self._model = settings.GROQ_MODEL
+
+    def generate(self, prompt: str, system_prompt: str | None = None) -> str:
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        completion = self._client.chat.completions.create(
+            model=self._model,
+            messages=messages,
+            temperature=0.2,
+            max_tokens=1024,
+        )
+        return completion.choices[0].message.content or ""
+
+    def generate_structured(
+        self, prompt: str, schema_hint: str, system_prompt: str | None = None
+    ) -> dict[str, Any]:
+        structured_system = (
+            (system_prompt or "")
+            + "\n\nYou must respond with ONLY valid JSON matching this shape, "
+            "no prose, no markdown fences:\n"
+            + schema_hint
+        )
+        raw = self.generate(prompt, system_prompt=structured_system)
+        cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            logger.error("Groq structured response was not valid JSON: %s", raw)
+            return {"error": "invalid_json", "raw_response": raw}

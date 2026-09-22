@@ -1,0 +1,162 @@
+"""
+Playwright-based crawler for dynamic reconnaissance.
+
+Discovers pages, links, and forms within scope, respecting the scan's
+ScanScope limits (max pages, timeouts, same-origin restriction). Fails
+gracefully — if Playwright or its browser binary isn't installed, this
+returns an empty result and logs a warning rather than crashing the
+scan (see services/security_agent/dependency_check.py).
+
+Requires: `pip install playwright` AND `playwright install chromium`
+(the second step downloads the actual browser binary — pip alone is
+not sufficient).
+"""
+import logging
+import time
+from dataclasses import dataclass, field
+from urllib.parse import urljoin, urlparse
+
+from app.services.web_analysis.scope import ScanScope
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class DiscoveredForm:
+    action_url: str
+    method: str
+    input_names: list[str] = field(default_factory=list)
+
+
+@dataclass
+class DiscoveredPage:
+    url: str
+    title: str | None
+    status_code: int | None
+    forms: list[DiscoveredForm] = field(default_factory=list)
+    links: list[str] = field(default_factory=list)
+
+
+@dataclass
+class CrawlResult:
+    pages: list[DiscoveredPage] = field(default_factory=list)
+    js_resources: set[str] = field(default_factory=set)
+    truncated: bool = False  # hit max_pages or crawl_timeout before exhausting the site
+
+
+def is_playwright_available() -> bool:
+    try:
+        import playwright  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
+def crawl(scope: ScanScope) -> CrawlResult:
+    result = CrawlResult()
+
+    if not is_playwright_available():
+        logger.warning("Playwright not installed — skipping dynamic reconnaissance")
+        return result
+
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        logger.warning("Playwright import failed — skipping dynamic reconnaissance")
+        return result
+
+    visited: set[str] = set()
+    queue: list[str] = [scope.target_url]
+    start_time = time.monotonic()
+
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(ignore_https_errors=True)
+            page = context.new_page()
+            page.set_default_timeout(scope.request_timeout_seconds * 1000)
+
+            while queue and len(result.pages) < scope.max_pages:
+                if time.monotonic() - start_time > scope.crawl_timeout_seconds:
+                    result.truncated = True
+                    break
+
+                url = queue.pop(0)
+                if url in visited or not scope.is_url_in_scope(url):
+                    continue
+                visited.add(url)
+
+                try:
+                    response = page.goto(url, wait_until="domcontentloaded")
+                except Exception as exc:  # noqa: BLE001 — one bad page must not abort the crawl
+                    logger.info("Crawler: failed to load %s (%s)", url, exc)
+                    continue
+
+                time.sleep(scope.rate_limit_delay_seconds)
+
+                discovered = DiscoveredPage(
+                    url=url,
+                    title=_safe(page.title),
+                    status_code=response.status if response else None,
+                )
+
+                # Links
+                try:
+                    hrefs = page.eval_on_selector_all("a[href]", "els => els.map(e => e.href)")
+                except Exception:  # noqa: BLE001
+                    hrefs = []
+                for href in hrefs or []:
+                    absolute = urljoin(url, href)
+                    if scope.is_url_in_scope(absolute) and absolute not in visited:
+                        discovered.links.append(absolute)
+                        if absolute not in queue:
+                            queue.append(absolute)
+
+                # Forms
+                try:
+                    forms_raw = page.eval_on_selector_all(
+                        "form",
+                        """els => els.map(f => ({
+                            action: f.action,
+                            method: (f.method || 'get').toUpperCase(),
+                            inputs: Array.from(f.elements).map(i => i.name).filter(Boolean)
+                        }))""",
+                    )
+                except Exception:  # noqa: BLE001
+                    forms_raw = []
+                for f in forms_raw or []:
+                    discovered.forms.append(
+                        DiscoveredForm(
+                            action_url=urljoin(url, f.get("action") or url),
+                            method=f.get("method", "GET"),
+                            input_names=f.get("inputs", []),
+                        )
+                    )
+
+                # JS resources
+                try:
+                    scripts = page.eval_on_selector_all("script[src]", "els => els.map(e => e.src)")
+                except Exception:  # noqa: BLE001
+                    scripts = []
+                for src in scripts or []:
+                    result.js_resources.add(urljoin(url, src))
+
+                result.pages.append(discovered)
+
+            browser.close()
+
+    except Exception as exc:  # noqa: BLE001 — browser launch failure (e.g. binary not installed)
+        logger.warning("Crawler failed to start (is `playwright install chromium` done?): %s", exc)
+
+    if queue and len(result.pages) >= scope.max_pages:
+        result.truncated = True
+
+    return result
+
+
+def _safe(fn):
+    try:
+        return fn()
+    except Exception:  # noqa: BLE001
+        return None

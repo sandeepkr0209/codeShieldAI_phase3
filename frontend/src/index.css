@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-slate-200 antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  table {
+    @apply border-collapse;
+  }
+}
+
+@layer components {
+  /* Dense, technical surface — deliberately less rounded than a typical
+     "AI dashboard" card; borders carry structure instead of shadows. */
+  .card {
+    @apply bg-surface border border-border rounded-lg;
+  }
+  .card-raised {
+    @apply bg-surface-raised border border-border-strong rounded-lg;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[11px] font-medium tracking-wide;
+  }
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-md px-3.5 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply border border-border-strong hover:bg-surface-alt text-ink-primary text-sm font-medium rounded-md px-3.5 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply text-ink-secondary hover:text-ink-primary hover:bg-surface-alt text-sm font-medium rounded-md px-3 py-1.5 transition-colors;
+  }
+  .input-field {
+    @apply w-full bg-surface-alt border border-border rounded-md px-3 py-2 text-sm text-ink-primary placeholder:text-ink-disabled focus:outline-none focus:ring-1 focus:ring-primary/60 focus:border-primary/60 transition-colors;
+  }
+  .data-table {
+    @apply w-full text-sm;
+  }
+  .data-table th {
+    @apply text-left text-meta text-ink-tertiary font-medium uppercase tracking-wide px-4 py-2.5 border-b border-border;
+  }
+  .data-table td {
+    @apply px-4 py-3 border-b border-border text-ink-secondary;
+  }
+  .data-table tbody tr {
+    @apply transition-colors;
+  }
+  .data-table tbody tr:hover {
+    @apply bg-surface-alt/60;
+  }
+  .nav-item {
+    @apply flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm transition-colors;
+  }
+  .nav-item-active {
+    @apply bg-primary-muted text-primary font-medium relative;
+  }
+  .nav-item-active::before {
+    content: "";
+    @apply absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2.5 h-4 w-[2.5px] bg-primary rounded-full;
+  }
+  .nav-item-inactive {
+    @apply text-ink-tertiary hover:text-ink-primary hover:bg-surface-alt;
+  }
+}
