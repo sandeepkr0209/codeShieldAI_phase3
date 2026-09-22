@@ -1,27 +1,73 @@
+# ============================================================
+# CodeShieldAI Phase 5 - Windows Backend Requirements
+# Python 3.12
+# ============================================================
+
+# -------------------------
+# API / Web
+# -------------------------
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
-sqlalchemy==2.0.36
-alembic==1.14.0
-psycopg2-binary==2.9.10
-pydantic==2.10.4
-pydantic-settings==2.7.1
-groq==0.13.1
-python-dotenv==1.0.1
-pytest==8.3.4
+python-multipart==0.0.20
 httpx==0.28.1
 
-# --- Phase 2: code analysis, RAG ---
-python-multipart==0.0.20
-tree-sitter==0.23.2
-tree-sitter-languages==1.10.2
-semgrep==1.97.0
-bandit==1.8.0
-chromadb==0.5.23
-sentence-transformers==3.3.1
-playwright==1.49.1
+# -------------------------
+# Configuration
+# -------------------------
+pydantic==2.10.4
+pydantic-settings==2.7.1
+python-dotenv==1.0.1
+email-validator==2.2.0
 
-# --- Auth (email+password, Google OAuth, JWT cookies) ---
+# -------------------------
+# Database
+# -------------------------
+SQLAlchemy==2.0.36
+alembic==1.14.0
+psycopg2-binary==2.9.10
+
+# -------------------------
+# Authentication
+# -------------------------
+PyJWT==2.10.1
 passlib[argon2]==1.7.4
 argon2-cffi==23.1.0
-pyjwt==2.10.1
-email-validator==2.2.0
+
+# -------------------------
+# LLM
+# -------------------------
+groq==0.13.1
+
+# -------------------------
+# Code parsing / analysis
+# -------------------------
+tree-sitter==0.23.2
+tree-sitter-languages==1.10.2
+bandit==1.8.0
+
+# -------------------------
+# RAG / Embeddings
+# -------------------------
+chromadb==0.5.23
+sentence-transformers==3.3.1
+
+# -------------------------
+# Browser automation
+# -------------------------
+playwright==1.49.1
+
+# -------------------------
+# Source / file processing
+# -------------------------
+PyYAML==6.0.2
+
+# -------------------------
+# GitHub integration
+# -------------------------
+PyGithub==2.5.0
+
+# -------------------------
+# Testing
+# -------------------------
+pytest==8.3.4
+pytest-asyncio==0.25.0
