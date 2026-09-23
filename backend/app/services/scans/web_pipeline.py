@@ -10,6 +10,7 @@ falls back to testing just the target URL itself via HTTPX rather than
 failing the whole scan — recorded as a warning, never silently.
 """
 import logging
+import asyncio
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 from uuid import UUID
@@ -40,7 +41,7 @@ def _set_stage(db, scan: Scan, stage: ScanStage) -> None:
     db.commit()
 
 
-def run_web_scan(scan_id: UUID) -> None:
+async def run_web_scan(scan_id: UUID) -> None:
     """Entry point invoked as a background task. Owns its own DB session."""
     db = SessionLocal()
     try:
@@ -58,7 +59,7 @@ def run_web_scan(scan_id: UUID) -> None:
         scan.started_at = datetime.now(timezone.utc)
         db.commit()
 
-        _run_pipeline(db, scan, project, availability)
+        await _run_pipeline(db, scan, project, availability)
 
     except Exception as exc:  # noqa: BLE001
         logger.exception("Web scan %s failed", scan_id)
@@ -75,7 +76,7 @@ def run_web_scan(scan_id: UUID) -> None:
         db.close()
 
 
-def _run_pipeline(db, scan: Scan, project: Project, availability: dict) -> None:
+async def _run_pipeline(db, scan: Scan, project: Project, availability: dict) -> None:
     # --- Stage: SCOPE_VALIDATION ---
     _set_stage(db, scan, ScanStage.SCOPE_VALIDATION)
     try:
@@ -90,7 +91,7 @@ def _run_pipeline(db, scan: Scan, project: Project, availability: dict) -> None:
     # --- Stage: RECONNAISSANCE ---
     _set_stage(db, scan, ScanStage.RECONNAISSANCE)
     if is_playwright_available():
-        crawl_result = crawl(scope)
+        crawl_result = await asyncio.to_thread(crawl, scope)
     else:
         crawl_result = None
         logger.warning("Scan %s: Playwright unavailable — falling back to single-URL analysis", scan.id)
