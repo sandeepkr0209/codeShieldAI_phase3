@@ -1,12 +1,49 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+
+# Environment
 .env
+.env.*
+!.env.example
+
+# Virtual environments
 .venv/
 venv/
-*.egg-info/
+env/
+
+# Testing / cache
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime storage
 storage/projects/*
 storage/chroma/*
 !storage/projects/.gitkeep
 !storage/chroma/.gitkeep
-                
+
+# Generated reports / uploads
+storage/reports/*
+storage/uploads/*
+storage/tmp/*
+
+# Logs
+*.log
+logs/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
