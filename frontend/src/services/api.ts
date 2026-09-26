@@ -98,6 +98,10 @@ export const listReportsForScan = (scanId: string) => request<Report[]>(`/report
 export const generateReport = (scanId: string) =>
   request<Report>(`/scans/${scanId}/reports`, { method: "POST" });
 export const downloadReportUrl = (reportId: string) => `${BASE_URL}/reports/${reportId}/download`;
+export const deleteReport = (reportId: string) =>
+  request<void>(`/reports/${reportId}`, {
+    method: "DELETE",
+  });
 
 // --- Application map (dynamic analysis) ---
 export const listScanPages = (scanId: string) => request<WebPage[]>(`/scans/${scanId}/pages`);

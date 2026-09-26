@@ -56,12 +56,7 @@ export default function Reports() {
     (q) => q.data ?? []
   );
 
-  const scansWithoutReport = completedScans.filter(
-    (scan) =>
-      !allReports.some(
-        (r) => r.scan_id === scan.id
-      )
-  );
+  const scansWithReports = completedScans;
 
   const generateMutation = useMutation({
     mutationFn: (scanId: string) =>
@@ -98,14 +93,14 @@ export default function Reports() {
       </div>
 
       {!isLoading &&
-        scansWithoutReport.length > 0 && (
+        scansWithReports.length > 0 && (
           <div className="card p-5">
             <h3 className="text-sm font-medium text-slate-300 mb-3">
               Completed scans without a report yet
             </h3>
 
             <div className="divide-y divide-border">
-              {scansWithoutReport.map((scan) => (
+              {scansWithReports.map((scan) => (
                 <div
                   key={scan.id}
                   className="flex items-center justify-between py-2.5"
