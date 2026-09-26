@@ -7,6 +7,7 @@ findings — PDF export is not yet implemented (HTML first, per spec).
 """
 
 import uuid
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
@@ -155,7 +156,7 @@ def get_report(
 
     return ReportRead.model_validate(report)
 
-
+# download route
 @router.get(
     "/reports/{report_id}/download"
 )
@@ -186,3 +187,42 @@ def download_report(
         media_type="text/html",
         filename=f"{report.report_name}.html",
     )
+
+# deletion route
+
+@router.delete(
+    "/reports/{report_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_report(
+    report_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> None:
+    report = db.get(
+        Report,
+        report_id,
+    )
+
+    if report is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Report not found",
+        )
+
+    _get_owned_scan_and_project(
+        db,
+        report.scan_id,
+        current_user,
+    )
+
+    # Delete generated HTML file from disk.
+    if report.file_path:
+        report_path = Path(report.file_path)
+
+        if report_path.exists():
+            report_path.unlink()
+
+    # Delete report database record.
+    db.delete(report)
+    db.commit()

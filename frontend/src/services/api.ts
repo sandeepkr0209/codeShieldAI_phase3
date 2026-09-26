@@ -88,7 +88,10 @@ export const createScan = (projectId: string, scanType: ScanType) =>
     method: "POST",
     body: JSON.stringify({ scan_type: scanType }),
   });
-
+export const deleteScan = (scanId: string) =>
+  request<void>(`/scans/${scanId}`, {
+    method: "DELETE",
+  });
 // --- Findings ---
 export const listFindingsForScan = (scanId: string) => request<FindingDetail[]>(`/scans/${scanId}/findings`);
 export const getFinding = (findingId: string) => request<FindingDetail>(`/findings/${findingId}`);
