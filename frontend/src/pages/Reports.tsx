@@ -30,10 +30,18 @@ export default function Reports() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
+  // --------------------------------------------------
+  // Projects
+  // --------------------------------------------------
+
   const { data: projects } = useQuery({
     queryKey: ["projects"],
     queryFn: listProjects,
   });
+
+  // --------------------------------------------------
+  // Scans
+  // --------------------------------------------------
 
   const scanQueries = useQueries({
     queries: (projects ?? []).map((p) => ({
@@ -55,11 +63,16 @@ export default function Reports() {
     (s) => s.status === "completed"
   );
 
+  // --------------------------------------------------
+  // Reports
+  // --------------------------------------------------
+
   const reportQueries = useQueries({
     queries: allScans.map((scan) => ({
       queryKey: ["reports", scan.id],
       queryFn: () => listReportsForScan(scan.id),
       enabled: scansLoaded,
+      retry: false,
     })),
   });
 
@@ -73,7 +86,10 @@ export default function Reports() {
 
   const scansWithReports = completedScans;
 
+  // --------------------------------------------------
   // Generate report
+  // --------------------------------------------------
+
   const generateMutation = useMutation({
     mutationFn: (scanId: string) =>
       generateReport(scanId),
@@ -96,7 +112,10 @@ export default function Reports() {
       ),
   });
 
+  // --------------------------------------------------
   // Delete generated report
+  // --------------------------------------------------
+
   const deleteReportMutation = useMutation({
     mutationFn: (reportId: string) =>
       deleteReport(reportId),
@@ -125,18 +144,64 @@ export default function Reports() {
       ),
   });
 
+  // --------------------------------------------------
   // Delete scan
+  // --------------------------------------------------
+
   const deleteScanMutation = useMutation({
     mutationFn: (scanId: string) =>
       deleteScan(scanId),
 
-    onSuccess: () => {
+    // ------------------------------------------------
+    // Optimistically remove scan from React Query
+    // cache BEFORE the backend deletion completes.
+    // ------------------------------------------------
+    onMutate: async (scanId) => {
+      // Stop any currently running scan-list requests.
+      await queryClient.cancelQueries({
+        queryKey: ["scans"],
+      });
+
+      // Remove the scan immediately from every
+      // project-specific scan cache.
+      queryClient.setQueriesData(
+        {
+          queryKey: ["scans"],
+        },
+        (oldData: unknown) => {
+          if (!Array.isArray(oldData)) {
+            return oldData;
+          }
+
+          return oldData.filter(
+            (scan: { id: string }) =>
+              scan.id !== scanId
+          );
+        }
+      );
+
+      // Remove the report query immediately.
+      queryClient.removeQueries({
+        queryKey: ["reports", scanId],
+      });
+
+      return { scanId };
+    },
+
+    // ------------------------------------------------
+    // Backend deletion succeeded.
+    // ------------------------------------------------
+    onSuccess: (_, scanId) => {
+      // Refresh scan lists to make sure the frontend
+      // matches the actual backend state.
       queryClient.invalidateQueries({
         queryKey: ["scans"],
       });
 
-      queryClient.invalidateQueries({
-        queryKey: ["reports"],
+      // Make absolutely sure no report query for the
+      // deleted scan remains in the cache.
+      queryClient.removeQueries({
+        queryKey: ["reports", scanId],
       });
 
       showToast(
@@ -145,15 +210,31 @@ export default function Reports() {
       );
     },
 
-    onError: (err: Error) =>
+    // ------------------------------------------------
+    // Backend deletion failed.
+    // ------------------------------------------------
+    onError: (err: Error) => {
+      // Re-fetch the scans so the optimistically removed
+      // scan comes back if the deletion failed.
+      queryClient.invalidateQueries({
+        queryKey: ["scans"],
+      });
+
       showToast(
         err.message,
         "error"
-      ),
+      );
+    },
   });
+
+  // --------------------------------------------------
+  // UI
+  // --------------------------------------------------
 
   return (
     <div className="space-y-6">
+
+      {/* Page header */}
       <div>
         <h1 className="text-xl font-semibold text-slate-100">
           Reports
@@ -164,20 +245,27 @@ export default function Reports() {
         </p>
       </div>
 
-      {/* Completed scans */}
+      {/* ------------------------------------------------
+          Completed scans
+      ------------------------------------------------- */}
+
       {!isLoading &&
         scansWithReports.length > 0 && (
           <div className="card p-5">
+
             <h3 className="text-sm font-medium text-slate-300 mb-3">
               Completed scans
             </h3>
 
             <div className="divide-y divide-border">
+
               {scansWithReports.map((scan) => (
                 <div
                   key={scan.id}
                   className="flex items-center justify-between py-2.5"
                 >
+
+                  {/* Scan */}
                   <Link
                     to={`/scans/${scan.id}`}
                     className="text-sm text-slate-300 hover:text-primary font-mono"
@@ -187,6 +275,7 @@ export default function Reports() {
                   </Link>
 
                   <div className="flex items-center gap-3">
+
                     {/* Generate report */}
                     <button
                       onClick={() =>
@@ -225,25 +314,34 @@ export default function Reports() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
+
                   </div>
                 </div>
               ))}
+
             </div>
           </div>
         )}
 
-      {/* Generated reports */}
+      {/* ------------------------------------------------
+          Generated reports
+      ------------------------------------------------- */}
+
       <div className="card p-5">
+
         {isLoading ? (
           <CardSkeleton />
+
         ) : allReports.length === 0 ? (
           <EmptyState
             icon={FileText}
             title="No reports generated yet"
             description="Generate a report from a completed scan's page, or use the list above."
           />
+
         ) : (
           <div className="divide-y divide-border">
+
             {allReports.map((r) => {
               const scan = allScans.find(
                 (s) => s.id === r.scan_id
@@ -262,10 +360,14 @@ export default function Reports() {
                   key={r.id}
                   className="flex items-center justify-between py-3"
                 >
+
+                  {/* Report information */}
                   <div className="flex items-center gap-3">
+
                     <FileText className="h-4 w-4 text-slate-500" />
 
                     <div>
+
                       <Link
                         to={`/scans/${r.scan_id}`}
                         className="text-sm text-slate-200 hover:text-primary"
@@ -281,10 +383,13 @@ export default function Reports() {
                           r.created_at
                         )}
                       </p>
+
                     </div>
                   </div>
 
+                  {/* Report actions */}
                   <div className="flex items-center gap-3">
+
                     {/* Download report */}
                     <a
                       href={downloadReportUrl(r.id)}
@@ -318,12 +423,15 @@ export default function Reports() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
+
                   </div>
                 </div>
               );
             })}
+
           </div>
         )}
+
       </div>
     </div>
   );
